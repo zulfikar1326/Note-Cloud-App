@@ -10,6 +10,9 @@ Cloud Notes adalah aplikasi **berbasis cloud** sederhana untuk menyimpan, menamp
 Aplikasi ini dibangun menggunakan **arsitektur serverless AWS** sebagai bagian dari tugas proyek mata kuliah Cloud Computing.
 
 ---
+## link Access ✅
+  - http://note-cloud-app.s3-website-us-east-1.amazonaws.com/
+---
 
 ## 📌 Tujuan Proyek
 - Mengimplementasikan aplikasi berbasis cloud
