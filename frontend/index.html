@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloud Notes - Premium Edition</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+
+    .note-item {
+      transition: all 0.2s ease;
+    }
+
+    .note-item:hover {
+      transform: translateX(5px);
+    }
+  </style>
+</head>
+
+<body class="p-4 md:p-8">
+
+  <div class="max-w-2xl mx-auto">
+    <!-- Header Section -->
+    <div class="glass rounded-3xl p-8 mb-6">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-indigo-600" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+        Cloud Notes
+      </h1>
+      <p class="text-gray-500 mb-6">Simpan ide cemerlangmu di sini👏🏻</p>
+
+      <!-- Input Section -->
+      <div class="flex flex-col md:flex-row gap-3">
+        <input type="text" id="noteInput" placeholder="Apa yang kamu pikirkan hari ini?"
+          class="flex-grow px-5 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all" />
+        <button id="saveBtn" onclick="addNote()"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3 rounded-2xl transition-all active:scale-95 flex items-center justify-center shadow-lg shadow-indigo-200 disabled:opacity-50">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+              clip-rule="evenodd" />
+          </svg>
+          Simpan
+        </button>
+      </div>
+    </div>
+
+    <!-- List Section -->
+    <div class="glass rounded-3xl p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-gray-800">Daftar Catatan</h3>
+        <span id="noteCount"
+          class="bg-indigo-100 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full">Memuat...</span>
+      </div>
+
+      <ul id="notesList" class="space-y-3">
+        <!-- Notes will appear here -->
+      </ul>
+
+      <div id="emptyState" class="text-center py-10 hidden">
+        <div class="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        </div>
+        <p class="text-gray-400">Belum ada catatan. Mulai menulis sekarang!</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://rhw827lyu1.execute-api.us-east-1.amazonaws.com/prob/notes";
+    const noteInput = document.getElementById('noteInput');
+    const notesList = document.getElementById('notesList');
+    const emptyState = document.getElementById('emptyState');
+    const noteCount = document.getElementById('noteCount');
+    const saveBtn = document.getElementById('saveBtn');
+
+    // LOAD NOTES DARI API
+    async function loadNotes() {
+      try {
+        const res = await fetch(API_URL);
+        const notes = await res.json();
+
+        notesList.innerHTML = "";
+
+        if (!notes || notes.length === 0) {
+          emptyState.classList.remove('hidden');
+          noteCount.innerText = "0 Catatan";
+        } else {
+          emptyState.classList.add('hidden');
+          noteCount.innerText = `${notes.length} Catatan`;
+
+          notes.forEach(note => {
+            const { content, note_id } = note;
+            const li = document.createElement("li");
+            li.className = 'note-item flex justify-between items-center bg-white p-4 rounded-xl border border-gray-100 shadow-sm';
+            li.innerHTML = `
+                            <span class="text-gray-700 font-medium">${content}</span>
+                            <button onclick="deleteNote('${note_id}')" class="text-red-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        `;
+            notesList.appendChild(li);
+          });
+        }
+      } catch (error) {
+        console.error("Gagal memuat catatan:", error);
+        noteCount.innerText = "Error!";
+      }
+    }
+
+    // TAMBAH NOTE KE API
+    async function addNote() {
+      const text = noteInput.value.trim();
+      if (!text) return;
+
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = "Menyimpan...";
+
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: text })
+        });
+
+        noteInput.value = "";
+        await loadNotes();
+      } catch (error) {
+        console.error("Gagal menambah catatan:", error);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Simpan
+                `;
+      }
+    }
+
+    // HAPUS NOTE DARI API
+    async function deleteNote(id) {
+      if (!confirm("Hapus catatan ini?")) return;
+
+      try {
+        await fetch(`${API_URL}/${id}`, {
+          method: "DELETE"
+        });
+        await loadNotes();
+      } catch (error) {
+        console.error("Gagal menghapus catatan:", error);
+      }
+    }
+
+    // Event listener untuk tombol Enter
+    noteInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addNote();
+    });
+
+    // Jalankan loadNotes saat pertama kali dibuka
+    window.onload = loadNotes;
+  </script>
+</body>
+
+</html>
