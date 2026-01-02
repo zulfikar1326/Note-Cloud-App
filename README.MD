@@ -21,7 +21,6 @@ Aplikasi ini dibangun menggunakan **arsitektur serverless AWS** sebagai bagian d
 | AWS Lambda | Backend logic (serverless) |
 | Amazon DynamoDB | Database NoSQL |
 | Amazon S3 | Hosting frontend statis |
-| Amazon CloudWatch | Logging & monitoring |
 
 ---
 
